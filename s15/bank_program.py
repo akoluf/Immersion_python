@@ -1,19 +1,21 @@
 import logging
 import sys
 
+
 class InsufficientFunds(Exception):
     def __init__(self, message="Insufficient funds in the account."):
         super().__init__(message)
+
 
 class BankAccount:
     def __init__(self, initial_balance=100):
         try:
             with open('balance.txt', 'r') as f:
                 self.balance = float(f.read())
-            print(f"Initial balance loaded: {self.balance}")
+            logging.info(f"Initial balance loaded: {self.balance}")
         except (FileNotFoundError, ValueError):
             self.balance = initial_balance
-            print(f"Using initial balance: {self.balance}")
+            logging.info(f"Using initial balance: {self.balance}")
 
     def deposit(self, amount):
         if amount <= 0:
@@ -39,14 +41,21 @@ class BankAccount:
     def _save_balance(self):
         with open('balance.txt', 'w') as f:
             f.write(str(self.balance))
-        print(f"Balance saved: {self.balance}")
+        logging.info(f"Balance saved: {self.balance}")
 
-# Configure logging to output to console
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Configure logging to output to console and file with timestamps
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename='bank_account.log',
+                    filemode='a')
 
 if __name__ == "__main__":
+    logging.info("Program started.")
+
     if len(sys.argv) < 2 or sys.argv[1].lower() == "help":
         print("Usage: python bank_program.py [deposit|withdraw|balance] [amount]")
+        logging.info("Help requested. Program exiting.")
         sys.exit(0)
 
     action = sys.argv[1].lower()
@@ -79,3 +88,5 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
         print("An unexpected error occurred. Please check the logs.")
+
+    logging.info("Program ended.")
