@@ -44,7 +44,7 @@ class BankAccount:
         logging.info(f"Balance saved: {self.balance}")
 
 
-# Configure logging to output to console and file with timestamps
+# Configure logging to output to file with timestamps
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     filename='bank_account.log',
@@ -54,7 +54,31 @@ if __name__ == "__main__":
     logging.info("Program started.")
 
     if len(sys.argv) < 2 or sys.argv[1].lower() == "help":
-        print("Usage: python bank_program.py [deposit|withdraw|balance] [amount]")
+        help_message = """
+Usage: python bank_program.py [action] [amount]
+
+Actions:
+  deposit [amount]: Add the specified amount to the account balance. [amount] is required.
+  withdraw [amount]: Subtract the specified amount from the account balance if sufficient funds are available. [amount] is required.
+  balance: Display the current account balance. No amount needed.
+
+Examples:
+  Deposit: python bank_program.py deposit 100
+  Withdraw: python bank_program.py withdraw 50
+  Check Balance: python bank_program.py balance
+
+Error Handling:
+  - Raises InsufficientFundsError if attempting to withdraw more than the available balance.
+  - Logs errors and invalid inputs with timestamps.
+
+Logging:
+  - All actions and errors are logged to 'bank_account.log' with timestamps.
+
+Balance Persistence:
+  - Balance is saved to 'balance.txt' after each operation.
+  - If 'balance.txt' is not found or contains invalid data, the initial balance is set to 100.
+"""
+        print(help_message)
         logging.info("Help requested. Program exiting.")
         sys.exit(0)
 
