@@ -1,34 +1,47 @@
 import logging
 import sys
 
-class InsufficientFundsError(Exception):
+class InsufficientFunds(Exception):
     def __init__(self, message="Insufficient funds in the account."):
         super().__init__(message)
 
 class BankAccount:
-    def __init__(self, initial_balance=0):
-        self.balance = initial_balance
+    def __init__(self, initial_balance=100):
+        try:
+            with open('balance.txt', 'r') as f:
+                self.balance = float(f.read())
+            print(f"Initial balance loaded: {self.balance}")
+        except (FileNotFoundError, ValueError):
+            self.balance = initial_balance
+            print(f"Using initial balance: {self.balance}")
 
     def deposit(self, amount):
         if amount <= 0:
             raise ValueError("Deposit amount must be positive.")
         self.balance += amount
+        self._save_balance()
         logging.info(f"Deposited {amount}. New balance: {self.balance}")
 
     def withdraw(self, amount):
         if amount <= 0:
             raise ValueError("Withdrawal amount must be positive.")
         if amount > self.balance:
-            logging.error(f"Attempted to withdraw {amount} but only {self.balance} available.")
-            raise InsufficientFundsError()
+            logging.error(f"Attempted to withdraw {amount}, but only {self.balance} available.")
+            raise InsufficientFunds()
         self.balance -= amount
+        self._save_balance()
         logging.info(f"Withdrew {amount}. New balance: {self.balance}")
 
     def get_balance(self):
         logging.info(f"Balance requested. Current balance: {self.balance}")
         return self.balance
 
-# Set up logging configuration
+    def _save_balance(self):
+        with open('balance.txt', 'w') as f:
+            f.write(str(self.balance))
+        print(f"Balance saved: {self.balance}")
+
+# Configure logging to output to console
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 if __name__ == "__main__":
@@ -44,7 +57,7 @@ if __name__ == "__main__":
         print("Please provide a valid numeric amount.")
         sys.exit(1)
 
-    account = BankAccount(100)  # Initial balance of 100
+    account = BankAccount()  # Initial balance of 100 if balance.txt not found
 
     try:
         if action == "deposit":
@@ -59,7 +72,7 @@ if __name__ == "__main__":
         else:
             logging.error(f"Invalid action: {action}")
             print("Invalid action. Use 'deposit', 'withdraw', or 'balance'.")
-    except InsufficientFundsError as e:
+    except InsufficientFunds as e:
         print(f"Error: {e}")
     except ValueError as e:
         print(f"Error: {e}")
